@@ -1,0 +1,6 @@
+uvicorn backend:app --reload
+
+jobs
+kill %1
+
+open university-admin.html

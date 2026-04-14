@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Университет — Студенты и Группы</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* Art direction: university admin panel → clean, functional, academic
+   Palette: warm neutral surfaces, teal accent
+   Typography: Satoshi (body) — clear, modern
+   Density: balanced */
+
+:root, [data-theme="light"] {
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem;    --space-10: 2.5rem; --space-12: 3rem;
+
+  --color-bg:              #f7f6f2;
+  --color-surface:         #f9f8f5;
+  --color-surface-2:       #fbfbf9;
+  --color-surface-offset:  #f3f0ec;
+  --color-divider:         #dcd9d5;
+  --color-border:          #d4d1ca;
+  --color-text:            #28251d;
+  --color-text-muted:      #7a7974;
+  --color-text-faint:      #bab9b4;
+  --color-text-inverse:    #f9f8f4;
+  --color-primary:         #01696f;
+  --color-primary-hover:   #0c4e54;
+  --color-primary-active:  #0f3638;
+  --color-primary-highlight: #cedcd8;
+  --color-error:           #a12c7b;
+  --color-error-highlight: #e0ced7;
+  --color-success:         #437a22;
+  --color-success-highlight: #d4dfcc;
+  --color-warning:         #964219;
+  --color-warning-highlight: #ddcfc6;
+
+  --radius-sm: 0.375rem; --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+
+  --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --font-body: 'Satoshi', 'Inter', sans-serif;
+
+  --content-wide: 1200px;
+  --sidebar-w: 220px;
+}
+
+[data-theme="dark"] {
+  --color-bg:              #171614;
+  --color-surface:         #1c1b19;
+  --color-surface-2:       #201f1d;
+  --color-surface-offset:  #1d1c1a;
+  --color-divider:         #262523;
+  --color-border:          #393836;
+  --color-text:            #cdccca;
+  --color-text-muted:      #797876;
+  --color-text-faint:      #5a5957;
+  --color-text-inverse:    #2b2a28;
+  --color-primary:         #4f98a3;
+  --color-primary-hover:   #227f8b;
+  --color-primary-active:  #1a626b;
+  --color-primary-highlight: #313b3b;
+  --color-error:           #d163a7;
+  --color-error-highlight: #4c3d46;
+  --color-success:         #6daa45;
+  --color-success-highlight: #3a4435;
+  --color-warning:         #bb653b;
+  --color-warning-highlight: #564942;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d;
+    --color-surface-offset: #1d1c1a; --color-divider: #262523; --color-border: #393836;
+    --color-text: #cdccca; --color-text-muted: #797876; --color-text-faint: #5a5957;
+    --color-text-inverse: #2b2a28; --color-primary: #4f98a3; --color-primary-hover: #227f8b;
+    --color-primary-active: #1a626b; --color-primary-highlight: #313b3b;
+    --color-error: #d163a7; --color-error-highlight: #4c3d46;
+    --color-success: #6daa45; --color-success-highlight: #3a4435;
+    --color-warning: #bb653b; --color-warning-highlight: #564942;
+    --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2); --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-sm);
+  color: var(--color-text); background: var(--color-bg); display: flex;
+}
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+table { border-collapse: collapse; width: 100%; }
+a, button, input, select { transition: color var(--transition), background var(--transition), border-color var(--transition), box-shadow var(--transition); }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.01ms !important; } }
+
+/* ── Layout ── */
+.sidebar {
+  width: var(--sidebar-w); min-height: 100dvh; flex-shrink: 0;
+  background: var(--color-surface); border-right: 1px solid var(--color-border);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100dvh;
+  overflow-y: auto;
+}
+.main-area { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  height: 52px; background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--space-6); position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+}
+.content { flex: 1; padding: var(--space-6); max-width: var(--content-wide); width: 100%; }
+
+/* ── Sidebar ── */
+.sidebar-logo {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0;
+}
+.sidebar-logo svg { flex-shrink: 0; }
+.sidebar-logo-text { font-size: var(--text-sm); font-weight: 600; color: var(--color-text); line-height: 1.2; }
+.sidebar-logo-sub { font-size: var(--text-xs); color: var(--color-text-muted); }
+.sidebar-nav { padding: var(--space-3) var(--space-2); flex: 1; }
+.nav-section-label {
+  font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-3) var(--space-1);
+}
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  font-size: var(--text-sm); color: var(--color-text-muted); cursor: pointer;
+  user-select: none; transition: background var(--transition), color var(--transition);
+}
+.nav-item:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-highlight); color: var(--color-primary); font-weight: 500; }
+.nav-item svg { flex-shrink: 0; opacity: 0.7; }
+.nav-item.active svg { opacity: 1; }
+
+/* ── Topbar ── */
+.topbar-title { font-size: var(--text-base); font-weight: 600; }
+.topbar-actions { display: flex; align-items: center; gap: var(--space-2); }
+.btn-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted);
+}
+.btn-icon:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.api-url-badge {
+  font-size: var(--text-xs); color: var(--color-text-muted);
+  background: var(--color-surface-offset); border: 1px solid var(--color-border);
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-full);
+  display: flex; align-items: center; gap: var(--space-1);
+}
+.api-status { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
+.api-status.error { background: var(--color-error); }
+
+/* ── Sections ── */
+.section { display: none; }
+.section.active { display: block; }
+.page-header { margin-bottom: var(--space-6); display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.page-title { font-size: var(--text-xl); font-weight: 700; line-height: 1.15; }
+.page-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1); }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+  font-size: var(--text-sm); font-weight: 500; cursor: pointer; border: none;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.btn-primary { background: var(--color-primary); color: var(--color-text-inverse); }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-primary:active { background: var(--color-primary-active); }
+.btn-secondary {
+  background: var(--color-surface-offset); color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn-secondary:hover { background: var(--color-divider); }
+.btn-danger { background: var(--color-error-highlight); color: var(--color-error); }
+.btn-danger:hover { background: var(--color-error); color: var(--color-text-inverse); }
+.btn-sm { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
+
+/* ── Card ── */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+}
+.card-title { font-size: var(--text-base); font-weight: 600; }
+.card-body { padding: var(--space-4) var(--space-6); }
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; font-variant-numeric: tabular-nums lining-nums; }
+.data-table th {
+  text-align: left; font-size: var(--text-xs); font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--color-text-muted); padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border); background: var(--color-surface);
+}
+.data-table td {
+  padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider);
+  font-size: var(--text-sm); color: var(--color-text); vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: color-mix(in oklch, var(--color-primary) 4%, var(--color-surface)); }
+.td-actions { display: flex; align-items: center; gap: var(--space-2); }
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: 2px var(--space-2); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 500;
+}
+.badge-primary { background: var(--color-primary-highlight); color: var(--color-primary); }
+.badge-success { background: var(--color-success-highlight); color: var(--color-success); }
+
+/* ── Form ── */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
+.form-field { display: flex; flex-direction: column; gap: var(--space-2); }
+.form-label { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.form-input {
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  border: 1px solid var(--color-border); background: var(--color-surface-2);
+  font-size: var(--text-sm); color: var(--color-text); width: 100%;
+}
+.form-input:focus { border-color: var(--color-primary); outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 18%, transparent); }
+.form-input::placeholder { color: var(--color-text-faint); }
+.form-actions { display: flex; gap: var(--space-3); padding-top: var(--space-2); }
+.form-error { font-size: var(--text-xs); color: var(--color-error); margin-top: var(--space-1); }
+
+/* ── Modal ── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: oklch(0.1 0 0 / 0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+  opacity: 0; pointer-events: none; transition: opacity 200ms ease;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+  width: min(480px, calc(100vw - 2rem)); max-height: 90dvh; overflow-y: auto;
+  transform: translateY(12px); transition: transform 200ms cubic-bezier(0.16,1,0.3,1);
+}
+.modal-backdrop.open .modal { transform: translateY(0); }
+.modal-header {
+  padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-divider);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: var(--text-base); font-weight: 600; }
+.modal-body { padding: var(--space-5) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+.modal-footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-divider); display: flex; justify-content: flex-end; gap: var(--space-3); }
+
+/* ── Toast ── */
+.toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); z-index: 200; }
+.toast {
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg);
+  font-size: var(--text-sm); font-weight: 500;
+  box-shadow: var(--shadow-md); display: flex; align-items: center; gap: var(--space-2);
+  animation: toast-in 250ms cubic-bezier(0.16,1,0.3,1) forwards;
+  max-width: 320px;
+}
+@keyframes toast-in { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+.toast-success { background: var(--color-success-highlight); color: var(--color-success); border: 1px solid color-mix(in oklch, var(--color-success) 25%, transparent); }
+.toast-error { background: var(--color-error-highlight); color: var(--color-error); border: 1px solid color-mix(in oklch, var(--color-error) 25%, transparent); }
+
+/* ── Empty state ── */
+.empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--space-12) var(--space-8); color: var(--color-text-muted); }
+.empty-state svg { margin-bottom: var(--space-4); color: var(--color-text-faint); }
+.empty-state h3 { font-size: var(--text-base); font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
+.empty-state p { font-size: var(--text-sm); max-width: 36ch; margin-bottom: var(--space-5); }
+
+/* ── Loading shimmer ── */
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface-offset) 25%, var(--color-divider) 50%, var(--color-surface-offset) 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: var(--radius-sm);
+}
+.skeleton-row td { padding: var(--space-3) var(--space-4); }
+.skeleton-cell { height: 16px; }
+
+/* ── KPI strip ── */
+.kpi-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+.kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-4) var(--space-5); }
+.kpi-label { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: var(--space-2); }
+.kpi-value { font-size: var(--text-xl); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ── Responsive sidebar ── */
+@media (max-width: 767px) {
+  body { flex-direction: column; }
+  .sidebar { width: 100%; min-height: auto; height: auto; position: static; flex-direction: row; flex-wrap: wrap; }
+  .sidebar-logo { flex: 0 0 auto; border-bottom: none; border-right: 1px solid var(--color-divider); }
+  .sidebar-nav { display: flex; flex-direction: row; gap: var(--space-1); padding: var(--space-2); overflow-x: auto; flex: 1; }
+  .nav-section-label { display: none; }
+  .nav-item span { display: none; }
+  .nav-item { padding: var(--space-2); }
+  .content { padding: var(--space-4); }
+}
+</style>
+</head>
+<body>
+
+<!-- Skip link -->
+<a href="#main-content" style="position:absolute;left:-999px;top:0;padding:var(--space-2) var(--space-4);background:var(--color-primary);color:var(--color-text-inverse);border-radius:var(--radius-sm);z-index:999" onfocus="this.style.left='0'">Перейти к содержимому</a>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar" role="navigation" aria-label="Основная навигация">
+  <div class="sidebar-logo">
+    <svg aria-label="Логотип" width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="var(--color-primary)"/>
+      <path d="M8 22V14l8-6 8 6v8" stroke="var(--color-text-inverse)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="13" y="16" width="6" height="6" rx="1" stroke="var(--color-text-inverse)" stroke-width="1.5"/>
+    </svg>
+    <div>
+      <div class="sidebar-logo-text">УниверАдмин</div>
+      <div class="sidebar-logo-sub">Деканат</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Навигация</div>
+    <div class="nav-item active" data-section="dashboard" role="button" tabindex="0" aria-current="page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Сводка</span>
+    </div>
+    <div class="nav-item" data-section="groups" role="button" tabindex="0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Группы</span>
+    </div>
+    <div class="nav-item" data-section="students" role="button" tabindex="0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Студенты</span>
+    </div>
+    <div class="nav-item" data-section="seed" role="button" tabindex="0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+      <span>Seed данные</span>
+    </div>
+  </nav>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main-area">
+  <header class="topbar">
+    <div id="topbar-title" class="topbar-title">Сводка</div>
+    <div class="topbar-actions">
+      <div class="api-url-badge">
+        <span id="api-status-dot" class="api-status error"></span>
+        <span id="api-url-text">http://127.0.0.1:8000</span>
+      </div>
+      <button class="btn-icon" data-theme-toggle aria-label="Переключить тему">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main-content" class="content">
+
+    <!-- ── Dashboard ── -->
+    <section class="section active" id="section-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Сводка</h1>
+          <p class="page-subtitle">Общая статистика по факультету</p>
+        </div>
+        <button class="btn btn-secondary" onclick="loadDashboard()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.44"/></svg>
+          Обновить
+        </button>
+      </div>
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">Группы</div>
+          <div class="kpi-value" id="kpi-groups">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Студенты</div>
+          <div class="kpi-value" id="kpi-students">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Средний возраст</div>
+          <div class="kpi-value" id="kpi-avg-age">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Студенты по группам</h2></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table class="data-table" id="dashboard-table">
+              <thead><tr><th>Группа</th><th>Студентов</th></tr></thead>
+              <tbody id="dashboard-tbody">
+                <tr class="skeleton-row"><td><div class="skeleton skeleton-cell" style="width:80px"></div></td><td><div class="skeleton skeleton-cell" style="width:40px"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Groups ── -->
+    <section class="section" id="section-groups">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Группы</h1>
+          <p class="page-subtitle">Управление учебными группами</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-group')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить группу
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding-top:0">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Название</th><th>Студентов</th><th>Действия</th></tr></thead>
+              <tbody id="groups-tbody">
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton skeleton-cell"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Students ── -->
+    <section class="section" id="section-students">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Студенты</h1>
+          <p class="page-subtitle">Список всех студентов</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-student')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить студента
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap; gap: var(--space-3)">
+          <h2 class="card-title">Все студенты</h2>
+          <div style="display:flex; gap:var(--space-2); align-items:center;">
+            <label for="filter-group" style="font-size:var(--text-xs);color:var(--color-text-muted);">Группа:</label>
+            <select id="filter-group" class="form-input" style="width:160px;padding:var(--space-1) var(--space-2)" onchange="loadStudents()">
+              <option value="">Все группы</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Фамилия</th><th>Имя</th><th>Возраст</th><th>Группа</th><th>Действия</th></tr></thead>
+              <tbody id="students-tbody">
+                <tr class="skeleton-row"><td colspan="6"><div class="skeleton skeleton-cell"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Seed ── -->
+    <section class="section" id="section-seed">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Тестовые данные</h1>
+          <p class="page-subtitle">Быстрое заполнение базы данными Faker</p>
+        </div>
+      </div>
+      <div class="card" style="max-width:480px">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted);">Будут созданы 2 группы и 20 случайных студентов с помощью библиотеки Faker (ru_RU). Вызывает <code style="font-size:var(--text-xs);background:var(--color-surface-offset);padding:2px 5px;border-radius:var(--radius-sm)">POST /seed</code>.</p>
+          <button class="btn btn-primary" style="align-self:flex-start" onclick="runSeed()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Запустить Seed
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Modals ── -->
+
+<!-- Add Group -->
+<div class="modal-backdrop" id="modal-add-group" role="dialog" aria-modal="true" aria-labelledby="modal-add-group-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-add-group-title">Новая группа</h2>
+      <button class="btn-icon" onclick="closeModal('modal-add-group')" aria-label="Закрыть">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label class="form-label" for="new-group-name">Название группы</label>
+        <input class="form-input" id="new-group-name" type="text" placeholder="Например: ГГ-22-1">
+        <div class="form-error" id="new-group-name-err" style="display:none"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-group')">Отмена</button>
+      <button class="btn btn-primary" onclick="submitAddGroup()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Student -->
+<div class="modal-backdrop" id="modal-add-student" role="dialog" aria-modal="true" aria-labelledby="modal-add-student-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-add-student-title">Новый студент</h2>
+      <button class="btn-icon" onclick="closeModal('modal-add-student')" aria-label="Закрыть">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-field">
+          <label class="form-label" for="new-st-surname">Фамилия</label>
+          <input class="form-input" id="new-st-surname" type="text" placeholder="Иванов">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="new-st-name">Имя</label>
+          <input class="form-input" id="new-st-name" type="text" placeholder="Иван">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="new-st-age">Возраст (16–60)</label>
+          <input class="form-input" id="new-st-age" type="number" min="16" max="60" placeholder="20">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="new-st-group">Группа</label>
+          <select class="form-input" id="new-st-group"><option value="">— выберите —</option></select>
+        </div>
+      </div>
+      <div class="form-error" id="new-st-err" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-student')">Отмена</button>
+      <button class="btn btn-primary" onclick="submitAddStudent()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Student -->
+<div class="modal-backdrop" id="modal-edit-student" role="dialog" aria-modal="true" aria-labelledby="modal-edit-student-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-edit-student-title">Редактировать студента</h2>
+      <button class="btn-icon" onclick="closeModal('modal-edit-student')" aria-label="Закрыть">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-st-id">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-field">
+          <label class="form-label" for="edit-st-surname">Фамилия</label>
+          <input class="form-input" id="edit-st-surname" type="text">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="edit-st-name">Имя</label>
+          <input class="form-input" id="edit-st-name" type="text">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="edit-st-age">Возраст</label>
+          <input class="form-input" id="edit-st-age" type="number" min="16" max="60">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="edit-st-group">Группа</label>
+          <select class="form-input" id="edit-st-group"><option value="">—</option></select>
+        </div>
+      </div>
+      <div class="form-error" id="edit-st-err" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-student')">Отмена</button>
+      <button class="btn btn-primary" onclick="submitEditStudent()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const API = 'http://127.0.0.1:8000';
+let groupsCache = [];
+
+// ── Theme ───────────────────────────────────────────────────────────────────
+(function(){
+  const r = document.documentElement;
+  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  r.setAttribute('data-theme', d);
+  const t = document.querySelector('[data-theme-toggle]');
+  const sunSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+  const moonSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const updateIcon = () => t.innerHTML = d === 'dark' ? sunSVG : moonSVG;
+  updateIcon();
+  t.addEventListener('click', () => { d = d === 'dark' ? 'light' : 'dark'; r.setAttribute('data-theme', d); updateIcon(); });
+})();
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+const navItems = document.querySelectorAll('.nav-item[data-section]');
+const sections = document.querySelectorAll('.section');
+const topbarTitle = document.getElementById('topbar-title');
+const titles = { dashboard: 'Сводка', groups: 'Группы', students: 'Студенты', seed: 'Тестовые данные' };
+
+function navigateTo(sec) {
+  navItems.forEach(n => { n.classList.toggle('active', n.dataset.section === sec); n.setAttribute('aria-current', n.dataset.section === sec ? 'page' : 'false'); });
+  sections.forEach(s => s.classList.toggle('active', s.id === `section-${sec}`));
+  topbarTitle.textContent = titles[sec] || sec;
+  if (sec === 'dashboard') loadDashboard();
+  if (sec === 'groups') loadGroups();
+  if (sec === 'students') loadStudents();
+}
+
+navItems.forEach(n => {
+  n.addEventListener('click', () => navigateTo(n.dataset.section));
+  n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') navigateTo(n.dataset.section); });
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icon = type === 'success'
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  el.innerHTML = icon + msg;
+  tc.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, opts);
+  const statusDot = document.getElementById('api-status-dot');
+  if (res.ok) {
+    statusDot.className = 'api-status';
+  } else {
+    statusDot.className = 'api-status error';
+  }
+  return res;
+}
+
+// FormData helper (for form-data endpoints)
+function makeForm(obj) {
+  const f = new FormData();
+  Object.entries(obj).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== '') f.append(k, v); });
+  return f;
+}
+
+// ── API status check ──────────────────────────────────────────────────────────
+async function checkApi() {
+  try {
+    const r = await fetch(API + '/groups', { signal: AbortSignal.timeout(2000) });
+    document.getElementById('api-status-dot').className = r.ok ? 'api-status' : 'api-status error';
+  } catch { document.getElementById('api-status-dot').className = 'api-status error'; }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open')); });
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [gr, st] = await Promise.all([apiFetch('/groups'), apiFetch('/students')]);
+    const groups = await gr.json();
+    const students = await st.json();
+    document.getElementById('kpi-groups').textContent = groups.length;
+    document.getElementById('kpi-students').textContent = students.length;
+    const ages = students.map(s => s.age).filter(Boolean);
+    document.getElementById('kpi-avg-age').textContent = ages.length ? (ages.reduce((a,b)=>a+b,0)/ages.length).toFixed(1) : '—';
+
+    const countByGroup = {};
+    groups.forEach(g => countByGroup[g.id] = { name: g.name, count: 0 });
+    students.forEach(s => { if (s.group_id && countByGroup[s.group_id]) countByGroup[s.group_id].count++; });
+
+    const tbody = document.getElementById('dashboard-tbody');
+    if (!groups.length) {
+      tbody.innerHTML = `<tr><td colspan="2"><div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5-2 4-2 4 2 4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><h3>Нет данных</h3><p>Сначала добавьте группы или запустите Seed</p></div></td></tr>`;
+    } else {
+      tbody.innerHTML = Object.values(countByGroup).map(g =>
+        `<tr><td><span class="badge badge-primary">${g.name}</span></td><td><strong>${g.count}</strong></td></tr>`
+      ).join('');
+    }
+    groupsCache = groups;
+  } catch(e) {
+    document.getElementById('dashboard-tbody').innerHTML = `<tr><td colspan="2" style="padding:var(--space-4);color:var(--color-error);font-size:var(--text-sm)">Не удалось подключиться к API (${API}). Запустите сервер: uvicorn stage4_pydantic_orm_form:app --reload</td></tr>`;
+  }
+}
+
+// ── Groups ────────────────────────────────────────────────────────────────────
+async function loadGroups() {
+  const tbody = document.getElementById('groups-tbody');
+  tbody.innerHTML = `<tr class="skeleton-row"><td colspan="4"><div class="skeleton skeleton-cell"></div></td></tr>`;
+  try {
+    const r = await apiFetch('/groups');
+    const groups = await r.json();
+    groupsCache = groups;
+    refreshGroupSelects();
+    if (!groups.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3>Групп пока нет</h3><p>Нажмите «Добавить группу» или запустите Seed</p><button class="btn btn-primary" onclick="openModal('modal-add-group')">Добавить группу</button></div></td></tr>`;
+      return;
+    }
+    // Load student counts per group
+    const stR = await apiFetch('/students');
+    const students = await stR.json();
+    const counts = {};
+    students.forEach(s => { counts[s.group_id] = (counts[s.group_id] || 0) + 1; });
+    tbody.innerHTML = groups.map(g => `
+      <tr>
+        <td style="color:var(--color-text-muted)">${g.id}</td>
+        <td><strong>${g.name}</strong></td>
+        <td><span class="badge badge-success">${counts[g.id] || 0} студ.</span></td>
+        <td><div class="td-actions">
+          <button class="btn btn-secondary btn-sm" onclick="viewGroupStudents(${g.id},'${g.name}')">Студенты</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id},'${g.name}')">Удалить</button>
+        </div></td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:var(--space-4);color:var(--color-error);font-size:var(--text-sm)">Ошибка: ${e.message}</td></tr>`;
+  }
+}
+
+async function submitAddGroup() {
+  const name = document.getElementById('new-group-name').value.trim();
+  const errEl = document.getElementById('new-group-name-err');
+  if (!name) { errEl.textContent = 'Укажите название группы'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  try {
+    const r = await apiFetch('/groups', { method: 'POST', body: makeForm({ name }) });
+    if (r.ok) { toast('Группа создана'); closeModal('modal-add-group'); document.getElementById('new-group-name').value = ''; loadGroups(); }
+    else { const e = await r.json(); toast(e.detail || 'Ошибка', 'error'); }
+  } catch(e) { toast('Нет соединения с API', 'error'); }
+}
+
+async function deleteGroup(id, name) {
+  if (!confirm(`Удалить группу «${name}»? Это возможно только если в ней нет студентов.`)) return;
+  const r = await apiFetch(`/groups/${id}`, { method: 'DELETE' });
+  if (r.ok || r.status === 204) { toast('Группа удалена'); loadGroups(); }
+  else { const e = await r.json(); toast(e.detail || 'Ошибка', 'error'); }
+}
+
+function viewGroupStudents(id, name) {
+  document.getElementById('filter-group').value = id;
+  navigateTo('students');
+  loadStudents();
+}
+
+// ── Students ──────────────────────────────────────────────────────────────────
+async function loadStudents() {
+  const tbody = document.getElementById('students-tbody');
+  tbody.innerHTML = `<tr class="skeleton-row"><td colspan="6"><div class="skeleton skeleton-cell"></div></td></tr>`;
+  const gid = document.getElementById('filter-group').value;
+  const url = gid ? `/students?group_id=${gid}` : '/students';
+  try {
+    const [stR, grR] = await Promise.all([apiFetch(url), apiFetch('/groups')]);
+    const students = await stR.json();
+    const groups = await grR.json();
+    groupsCache = groups;
+    refreshGroupSelects();
+    const gMap = Object.fromEntries(groups.map(g => [g.id, g.name]));
+    if (!students.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><h3>Студентов нет</h3><p>Добавьте студента или запустите Seed</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = students.map(s => `
+      <tr>
+        <td style="color:var(--color-text-muted)">${s.id}</td>
+        <td><strong>${s.surname}</strong></td>
+        <td>${s.name}</td>
+        <td><span style="font-variant-numeric:tabular-nums">${s.age}</span></td>
+        <td>${s.group_id ? `<span class="badge badge-primary">${gMap[s.group_id] || s.group_id}</span>` : '<span style="color:var(--color-text-faint)">—</span>'}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openEditStudent(${s.id},'${s.surname}','${s.name}',${s.age},${s.group_id || 'null'})">Изменить</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})">Удалить</button>
+        </div></td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:var(--space-4);color:var(--color-error);font-size:var(--text-sm)">Ошибка: ${e.message}</td></tr>`;
+  }
+}
+
+async function submitAddStudent() {
+  const surname = document.getElementById('new-st-surname').value.trim();
+  const name = document.getElementById('new-st-name').value.trim();
+  const age = document.getElementById('new-st-age').value;
+  const group_id = document.getElementById('new-st-group').value;
+  const errEl = document.getElementById('new-st-err');
+  if (!surname || !name || !age || !group_id) { errEl.textContent = 'Заполните все поля'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  try {
+    const r = await apiFetch('/students', { method: 'POST', body: makeForm({ surname, name, age, group_id }) });
+    if (r.ok) { toast('Студент добавлен'); closeModal('modal-add-student'); document.getElementById('new-st-surname').value=''; document.getElementById('new-st-name').value=''; document.getElementById('new-st-age').value=''; document.getElementById('new-st-group').value=''; loadStudents(); }
+    else { const e = await r.json(); toast(e.detail || JSON.stringify(e), 'error'); }
+  } catch(e) { toast('Нет соединения с API', 'error'); }
+}
+
+function openEditStudent(id, surname, name, age, group_id) {
+  document.getElementById('edit-st-id').value = id;
+  document.getElementById('edit-st-surname').value = surname;
+  document.getElementById('edit-st-name').value = name;
+  document.getElementById('edit-st-age').value = age;
+  document.getElementById('edit-st-group').value = group_id || '';
+  document.getElementById('edit-st-err').style.display = 'none';
+  openModal('modal-edit-student');
+}
+
+async function submitEditStudent() {
+  const id = document.getElementById('edit-st-id').value;
+  const surname = document.getElementById('edit-st-surname').value.trim();
+  const name = document.getElementById('edit-st-name').value.trim();
+  const age = document.getElementById('edit-st-age').value;
+  const group_id = document.getElementById('edit-st-group').value;
+  const errEl = document.getElementById('edit-st-err');
+  if (!surname || !name || !age) { errEl.textContent = 'Фамилия, имя и возраст обязательны'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  try {
+    const r = await apiFetch(`/students/${id}`, { method: 'PUT', body: makeForm({ surname, name, age, group_id: group_id || null }) });
+    if (r.ok) { toast('Данные обновлены'); closeModal('modal-edit-student'); loadStudents(); }
+    else { const e = await r.json(); toast(e.detail || JSON.stringify(e), 'error'); }
+  } catch(e) { toast('Нет соединения с API', 'error'); }
+}
+
+async function deleteStudent(id) {
+  if (!confirm(`Удалить студента #${id}?`)) return;
+  const r = await apiFetch(`/students/${id}`, { method: 'DELETE' });
+  if (r.ok || r.status === 204) { toast('Студент удалён'); loadStudents(); }
+  else { const e = await r.json(); toast(e.detail || 'Ошибка', 'error'); }
+}
+
+// ── Seed ──────────────────────────────────────────────────────────────────────
+async function runSeed() {
+  try {
+    const r = await apiFetch('/seed', { method: 'POST' });
+    const data = await r.json();
+    if (r.ok) { toast(data.message || 'Seed выполнен'); }
+    else { toast(data.detail || 'Ошибка', 'error'); }
+  } catch(e) { toast('Нет соединения с API', 'error'); }
+}
+
+// ── Group selects refresh ─────────────────────────────────────────────────────
+function refreshGroupSelects() {
+  const opts = groupsCache.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  const filterSel = document.getElementById('filter-group');
+  const cur = filterSel.value;
+  filterSel.innerHTML = '<option value="">Все группы</option>' + opts;
+  filterSel.value = cur;
+  document.getElementById('new-st-group').innerHTML = '<option value="">— выберите —</option>' + opts;
+  document.getElementById('edit-st-group').innerHTML = '<option value="">—</option>' + opts;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+checkApi();
+loadDashboard();
+</script>
+</body>
+</html>

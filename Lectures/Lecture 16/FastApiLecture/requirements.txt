@@ -1,0 +1,17 @@
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.13.0
+click==8.3.2
+Faker==40.13.0
+fastapi==0.135.3
+greenlet==3.4.0
+h11==0.16.0
+idna==3.11
+pydantic==2.13.0
+pydantic_core==2.46.0
+python-multipart==0.0.26
+SQLAlchemy==2.0.49
+starlette==1.0.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+uvicorn==0.44.0
